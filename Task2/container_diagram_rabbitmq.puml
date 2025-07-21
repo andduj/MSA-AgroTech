@@ -1,0 +1,52 @@
+@startuml Контейнерная_диаграмма_RabbitMQ
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Контейнерная диаграмма (C2) — RabbitMQ
+
+Person(оператор, "Оператор фермы", "Работает с системой через Web UI")
+Person(админ, "Администратор", "Управляет пользователями и настройками")
+Person(аналитик, "Аналитик", "Анализирует отчёты и данные")
+
+System_Boundary(Система, "Система мониторинга скота") {
+    Container(web, "Web-приложение", "React/Vue", "UI для операторов и администраторов")
+    Container(api, "API Gateway", ".NET", "Единая точка входа для клиентов")
+    Container(monitoring, "Сервис мониторинга", ".NET", "Обработка данных с камер и датчиков, тревоги")
+    ContainerDb(monitoring_db, "БД мониторинга", "PostgreSQL", "Данные мониторинга и тревог")
+    Container(control, "Сервис управления", ".NET", "Управление кормушками, поилками, исполнительными устройствами")
+    ContainerDb(control_db, "БД управления", "PostgreSQL", "Данные управления устройствами")
+    Container(accounting, "Сервис учёта и отчётности", ".NET", "Учёт поголовья, событий, формирование отчётов")
+    ContainerDb(accounting_db, "БД учёта", "PostgreSQL", "Учёт поголовья и событий")
+    Container(security, "Сервис безопасности", ".NET", "Аутентификация, авторизация, управление ролями")
+    ContainerDb(security_db, "БД безопасности", "PostgreSQL", "Пользователи, роли, права")
+    Container(integration, "Сервис интеграции", ".NET", "Интеграция с внешними системами, шлюзами, BI/ERP")
+    ContainerDb(integration_db, "БД интеграции", "PostgreSQL", "Интеграционные данные")
+    Container(queue, "RabbitMQ", "RabbitMQ", "Очередь сообщений между сервисами, поддержка MQTT для IoT")
+}
+
+System_Ext(iot, "IoT-устройства", "Датчики, камеры, исполнительные устройства")
+System_Ext(bi, "BI/ERP системы", "Внешние системы учёта и аналитики")
+
+' Взаимодействия
+Rel(оператор, web, "Работает через UI")
+Rel(админ, web, "Администрирует через UI")
+Rel(аналитик, web, "Просматривает отчёты")
+Rel(web, api, "REST/HTTPS")
+Rel(api, monitoring, "REST/gRPC")
+Rel(api, control, "REST/gRPC")
+Rel(api, accounting, "REST/gRPC")
+Rel(api, security, "REST/gRPC")
+Rel(api, integration, "REST/gRPC")
+Rel(monitoring, queue, "Публикует события", "AMQP/MQTT")
+Rel(control, queue, "Потребляет команды", "AMQP/MQTT")
+Rel(monitoring, monitoring_db, "Читает/пишет данные")
+Rel(control, control_db, "Читает/пишет данные")
+Rel(accounting, accounting_db, "Читает/пишет данные")
+Rel(security, security_db, "Читает/пишет данные")
+Rel(integration, integration_db, "Читает/пишет данные")
+Rel(integration, queue, "Публикует/читает события", "AMQP/MQTT")
+Rel(integration, bi, "Интеграция с BI/ERP", "REST/ODBC")
+Rel(iot, queue, "MQTT", "Данные с устройств и команды") 
+@enduml 
