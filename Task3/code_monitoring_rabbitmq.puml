@@ -1,0 +1,104 @@
+@startuml code_monitoring_rabbitmq
+
+' UML-классы для Monitoring Service (RabbitMQ)
+
+' MonitoringStatusDto — DTO для передачи статуса мониторинга
+class MonitoringStatusDto <<DTO: статус мониторинга>> {
+  +status: MonitoringStatus
+  +lastUpdate: DateTime
+}
+
+' EventDto — DTO для передачи события мониторинга
+class EventDto <<DTO: событие мониторинга>> {
+  +id: Guid
+  +type: EventType
+  +timestamp: DateTime
+  +data: string
+}
+
+' AlarmDto — DTO для передачи тревоги
+class AlarmDto <<DTO: тревога>> {
+  +id: Guid
+  +eventId: Guid
+  +level: AlarmLevel
+  +message: string
+  +timestamp: DateTime
+  +status: AlarmStatus
+}
+
+EventDto "1" <-- "0..*" AlarmDto : основана на
+
+' EventFilter — DTO для фильтрации событий
+class EventFilter <<DTO: фильтр событий>> {
+  +from: DateTime
+  +to: DateTime
+  +type: EventType
+}
+
+' MonitoringStatus — статус системы мониторинга
+enum MonitoringStatus <<статус системы мониторинга>> {
+  OK
+  WARNING
+  ERROR
+}
+
+' EventType — тип события мониторинга
+enum EventType <<тип события>> {
+  SENSOR
+  CAMERA
+  MANUAL
+}
+
+' AlarmLevel — уровень тревоги
+enum AlarmLevel <<уровень тревоги>> {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+class MonitoringController {
+  +GetStatus(): MonitoringStatusDto
+  +PostEvent(event: EventDto): Result
+  +GetAlarms(): List<AlarmDto>
+  +GetEvents(filter: EventFilter): List<EventDto>
+  +DeleteEvent(id: Guid): Result
+}
+
+class MonitoringService {
+  +ProcessEvent()
+  +RaiseAlarm()
+}
+
+class AlarmEngine {
+  +CheckAlarm()
+}
+
+class MqttClientWrapper {
+  +Subscribe()
+  +ReceiveMessage()
+}
+
+class RabbitMqPublisher {
+  +PublishEvent()
+  +SubscribeCommand()
+}
+
+class EventRepository <<Repo>> {
+  +SaveEvent()
+  +GetEvents()
+}
+
+class AlarmRepository <<Repo>> {
+  +SaveAlarm()
+  +GetAlarms()
+}
+
+MonitoringController --> MonitoringService : вызывает бизнес-логику
+MonitoringService --> AlarmEngine : проверяет тревоги
+MonitoringService --> MqttClientWrapper : получает данные с устройств
+MonitoringService --> RabbitMqPublisher : публикует события
+MonitoringService --> EventRepository : сохраняет/читает события
+MonitoringService --> AlarmRepository : сохраняет/читает тревоги
+AlarmEngine --> AlarmRepository : сохраняет тревоги
+
+@enduml 

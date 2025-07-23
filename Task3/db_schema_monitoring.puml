@@ -1,0 +1,24 @@
+@startuml db_schema_monitoring
+
+title ER Diagram — Monitoring Events and Alarms
+
+entity Event {
+  * id : Guid <<PK>>
+  --
+  type : EventType
+  timestamp : DateTime
+  data : string
+}
+
+entity Alarm {
+  * id : Guid <<PK>>
+  eventId : Guid <<FK>>
+  level : AlarmLevel
+  message : string
+  timestamp : DateTime
+  status : AlarmStatus
+}
+
+Event ||--o{ Alarm : основана на
+
+@enduml 

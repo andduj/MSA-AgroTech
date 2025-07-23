@@ -1,0 +1,32 @@
+@startuml component_rabbitmq
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram (C3) — RabbitMQ
+
+Container_Boundary(monitoring, "Monitoring Service (.NET)") {
+    Component(api, "Monitoring API", "ASP.NET Core", "REST API для получения и управления данными мониторинга")
+    Component(processor, "Event Processor", "C# Service", "Обработка событий с датчиков и камер")
+    Component(alarm, "Alarm Engine", "C# Library", "Логика формирования тревог и оповещений")
+    Component(mqtt, "MQTT Client", "MQTTnet", "Получение данных с IoT-устройств через MQTT")
+    Component(repo, "Monitoring Repository", "EF Core", "Доступ к БД мониторинга")
+}
+
+Rel(api, processor, "Передаёт команды и запросы")
+Rel(processor, alarm, "Вызывает для анализа событий")
+Rel(processor, mqtt, "Получает данные с устройств")
+Rel(processor, repo, "Читает/пишет данные мониторинга")
+Rel(alarm, repo, "Записывает тревоги")
+
+System_Ext(rabbitmq, "RabbitMQ", "Очередь событий и команд")
+Rel(processor, rabbitmq, "Публикует события, подписывается на команды", "AMQP/MQTT")
+
+System_Ext(control, "Control Service", "Потребляет команды управления")
+Rel(rabbitmq, control, "Передаёт команды управления")
+
+System_Ext(accounting, "Accounting Service", "Потребляет события для учёта")
+Rel(rabbitmq, accounting, "Передаёт события мониторинга")
+
+@enduml 
