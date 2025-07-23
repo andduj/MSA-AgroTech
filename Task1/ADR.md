@@ -46,7 +46,7 @@
 
 **Контекстная диаграмма основного решения:**
 
-![Контекстная диаграмма основного решения](context_diagram_alternative.png)
+![Main context diagram](context_diagram_main.png)
 
 **Обоснование выбора технологий:**
 
@@ -60,7 +60,7 @@
 
 **Контекстная диаграмма альтернативного решения:**
 
-![Контекстная диаграмма альтернативного решения](context_diagram_main.png)
+![Alternative context diagram](context_diagram_alternative.png)
 
 **Обоснование альтернативного решения:**
 
